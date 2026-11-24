@@ -1,0 +1,12 @@
+node_modules
+dist
+.vercel
+
+# local tool settings
+.claude/
+
+# personal / source files the site doesn't use
+Moulishwar Resume (2).pdf
+me.jpg
+hf_*.png
+clips/

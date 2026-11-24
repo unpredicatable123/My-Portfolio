@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f1f0eb;
+  --color-ink: #0e0e0e;
+  --color-night: #09090a;
+  --color-coal: #141415;
+  --color-ash: #8b8a85;
+  --color-mist: #c9c8c2;
+  --color-lime: #c8ff2e;
+  --color-alert: #ff4632;
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-sans: "Inter Tight", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-night);
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-night);
+  color: #f4f4f2;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
+/* ---------- Type ---------- */
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 118;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.84;
+  text-transform: uppercase;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
+}
+
+/* Hollow text. Only the fill is transparent so the stroke keeps currentColor;
+   `outline: none` cancels Tailwind's own `outline` utility, which shares this class name. */
+.outline {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: var(--stroke, 2px) currentColor;
+  outline: none;
+}
+
+/* Outlined text that fills from left to right as --fill goes 0 → 1 */
+.fill-text {
+  --fill: 0;
+  background-image: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  background-size: 200% 100%;
+  background-position: calc(100% - var(--fill) * 100%) 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: var(--stroke, 2px) currentColor;
+}
+
+/* ---------- Bits ---------- */
+.grain {
+  position: fixed;
+  inset: -50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 0.9s steps(6) infinite;
+}
+
+@keyframes grain {
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-3%, 2%); }
+  40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); }
+  80% { transform: translate(3%, 3%); }
+  100% { transform: translate(0, 0); }
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pulse-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+}
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: inherit;
+  animation: ping 1.8s var(--ease-out-expo) infinite;
+}
+@keyframes ping {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
+.line-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  padding-bottom: 0.06em;
+}
+
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+  html.has-cursor, html.has-cursor * { cursor: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain, .pulse-dot::after { animation: none; }
+}

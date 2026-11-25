@@ -38,6 +38,111 @@ Reactions are wired in `src/lib/mascotDirector.js`: hover links (smile / grin / 
 click him (hop + fun fact), copy the email (grin). Moods and their values live in
 `src/lib/mascot.svelte.js`. If you replace the portrait image, update the `rig` landmarks.
 
+## The running character (full-body sprite)
+
+Once sprites exist, the floating buddy becomes a full-body, head-to-toe version of you that lives on
+the bottom edge of the screen. He wanders, walks, runs, jumps and emotes. Scroll fast and he dashes
+in the scroll direction. Poke him and he jumps. Section lines make him stop, turn to you and wave
+while the speech bubble (which follows him) is up. Go idle and he falls asleep. Until an `idle`
+sprite exists the site keeps the animated bust, so nothing breaks halfway through.
+
+- `src/lib/spriteBrain.js`: behaviour (wander, react to pokes, moods, speech and scroll)
+- `src/components/SpriteRunner.svelte`: draws him and runs the loop
+- `src/lib/sprite.js`: loads the strips and sets per-action defaults (fps, loop, speed)
+- `scripts/sprite.mjs`: turns Higgsfield images into strips
+
+### Actions
+
+Only `idle` is required; each action you add makes him livelier. A missing one borrows the closest
+match (no walk → he runs, no sleep → he sits, and so on). With neither `walk` nor `run` he gets around
+by hopping: a chain of `jump`s that only travel while he's in the air.
+
+> **Walk and run need a pose guide.** Asked for a "walk cycle", image models draw the same stride
+> in every pose, so he glides frozen mid-step. `python scripts/pose-guide.py` draws gray stick
+> mannequins in a correct 8-pose cycle; add that image as a third reference and ask the model to
+> redraw the character in exactly those poses ("copy the pose guide exactly; dark limbs are his
+> near arm and leg, light limbs his far ones"). It also prints the matching `--speed`. A short
+> image-to-video clip converted with `npm run sprite -- run.mp4 run` works too, but costs credits.
+
+| Action | Frames | Used for |
+|--------|--------|----------|
+| `idle` ⭐ | 4 | standing, breathing (required) |
+| `run` | 8 | dashes across the screen, fast scrolling |
+| `walk` | 7 | strolling around |
+| `jump` | 6 | pokes, surprise, end of a run (the jump arc is added in code; frames only need the body pose) |
+| `wave` | 6 | greeting when a section line appears |
+| `think` | 4 | "thinking" mood |
+| `dance` | 6–8 | love / cool moods, random fun |
+| `code` | 4 | sits typing on a laptop (random emote) |
+| `sit` | 4 | sits and rests |
+| `sleep` | 4 | dozes off after 16s idle |
+
+### 1. Make a full-body "master" image (once)
+
+Higgsfield → **Nano Banana 2** (or GPT Image 2), reference image: `public/media/me-3d.webp`, aspect **2:3**.
+
+> The same 3D Pixar-style character as the reference image: young Indian man, swept-up black hair,
+> rectangular black-frame glasses, short beard and moustache, cream plaid shirt with navy checks
+> (sleeves rolled to the elbow), dark navy jeans, white sneakers. FULL BODY, head to toe, the whole
+> body visible from the top of the hair to the soles of the shoes, nothing cropped. Standing relaxed,
+> turned three-quarters toward the RIGHT. Flat solid pure green #00FF00 background, no floor,
+> no shadow, no text.
+
+Save the result as `master.png`. Use it, plus `me-3d.webp`, as the references for every sheet below,
+so he looks the same in every action.
+
+### 2. Make one sprite sheet per action
+
+Same model, both reference images, aspect **21:9** (Nano Banana 2.1 can also do **4:1**, which is even
+better for one row). Start a fresh prompt each time (Ctrl+A, Delete). Paste the action line, then the
+shared tail:
+
+**Shared tail (always add):**
+> Sprite sheet for a 2D game: exactly N poses of the SAME character from the reference images in ONE
+> horizontal row, evenly spaced with clear empty space between poses so they don't touch. Every pose
+> shows the FULL BODY head to toe, nothing cropped. Same size, same camera distance, same lighting,
+> same outfit in every pose. Facing RIGHT. Flat solid pure green #00FF00 background, no floor, no
+> shadows, no text, no numbers, no grid lines or borders.
+
+**Action lines** (replace N with the number):
+- **idle (4):** Idle breathing loop, standing relaxed, arms loose, gentle smile; the poses differ only slightly (chest rises, shoulders lift a little).
+- **run (8):** Side view running cycle: contact, down, passing, up for the left leg, then the same for the right leg; arms swing opposite to legs, body leaning slightly forward.
+- **walk (8):** Side view walking cycle: contact, down, passing, up for each leg, relaxed arm swing.
+- **jump (6):** Jump: crouch to load, push off on toes, rising with arms up, peak with knees tucked, coming down legs extended, landing crouch.
+- **wave (6):** Turned three-quarters toward the viewer, raising the right hand and waving hello, big friendly smile; hand goes left, right, left.
+- **think (4):** Thinking: hand on chin, eyes looking up, head tilting slightly, finger tapping chin.
+- **dance (6):** A fun, goofy victory dance: fist pumps, hip sway, one knee up, happy face.
+- **code (4):** Sitting cross-legged on the floor with an open laptop on his lap, typing, focused; side view.
+- **sit (4):** Sitting cross-legged on the floor, relaxed, slight breathing movement; side view.
+- **sleep (4):** Sitting on the floor slumped forward, asleep, head nodding down; mouth slightly open.
+
+AI sheets are rarely perfect. Generate 2–4 and keep the one where the character stays most
+consistent; you can drop bad poses with `--frames` (a range like `2-5`, or a list like `1+3+5`).
+
+### 3. Convert each sheet
+
+```bash
+npm run sprite -- path/to/idle.png idle
+npm run sprite -- path/to/run.png run
+npm run sprite -- path/to/jump.png jump --frames 1-5     # drop a bad 6th pose
+npm run sprite -- path/to/wave.png wave --flip           # it came out facing left
+```
+
+This keys out the green, finds each pose, crops it, scales every action to the same body size, lines
+the feet up on one floor, and writes `public/media/sprite/<action>.webp` plus `sprite.json`. Refresh
+the site and he's there. Useful options (all listed at the top of `scripts/sprite.mjs`):
+
+- `--grid 4x2` if the poses are in a fixed grid or auto-split merges two that touch
+- `--fps 14` playback speed · `--loop` / `--once`
+- `--speed 1.6` for walk/run: raise it if his feet slide backwards, lower it if they skate forwards
+- `--size 0.62` how tall a pose is compared to standing (sit/code/sleep already default to this)
+- `--tol 60` if a green halo is left, `--tol 35` if parts of him disappear
+- A folder of separate images or a short video (`--start 1 --dur 1.2`) works as input too. A
+  Higgsfield image-to-video clip of the master "running in place on a green screen, locked camera"
+  gives the smoothest run, if one comes out clean.
+
+Set `sprite: null` in `src/lib/media.js` to go back to the bust.
+
 ## Media & Higgsfield
 
 All media slots live in `src/lib/media.js`.
@@ -71,6 +176,7 @@ so the site always works.
 | `malware` | ✅ 29 frames | Seedance 2.0 Fast, trimmed to 0–1.2s (a longer clean clip would scrub smoother) |
 | `journey` | ⏳ procedural fallback | not generated yet |
 | `contact` | ⏳ procedural star-warp | not generated yet |
+| `sprite` | ✅ idle 4 · walk 7 · run 8 · jump 6 · wave 6 · think 4 · dance 6 · code 3 · sit 3 · sleep 2 frames. Walk/run redrawn from `scripts/pose-guide.py` mannequins as a third reference; converted with `--fps 12 --speed 1.65` (run) and `--frames 1-3+5-8 --fps 8 --speed 0.85` (walk) | Seedream 5.0 lite (Unlimited), `me-3d.webp` + full-body master as references, green screen; raw sheets in `sprites-src/` (git-ignored) |
 
 When generating, make sure the prompt box is **completely empty** first (Ctrl+A, Delete); Higgsfield keeps
 the previous prompt and the old text can leak into the clip.

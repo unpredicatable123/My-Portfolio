@@ -1,0 +1,100 @@
+{
+  "actions": {
+    "code": {
+      "src": "code.webp",
+      "v": "490f56b1",
+      "frames": 3,
+      "cols": 3,
+      "w": 190,
+      "h": 200,
+      "ref": 320,
+      "fps": 5
+    },
+    "dance": {
+      "src": "dance.webp",
+      "v": "490de030",
+      "frames": 6,
+      "cols": 6,
+      "w": 294,
+      "h": 324,
+      "ref": 320
+    },
+    "idle": {
+      "src": "idle.webp",
+      "v": "9a7acf78",
+      "frames": 4,
+      "cols": 4,
+      "w": 117,
+      "h": 322,
+      "ref": 320
+    },
+    "jump": {
+      "src": "jump.webp",
+      "v": "c86bc3be",
+      "frames": 6,
+      "cols": 6,
+      "w": 178,
+      "h": 394,
+      "ref": 320
+    },
+    "run": {
+      "src": "run.webp",
+      "v": "9f7763ba",
+      "frames": 8,
+      "cols": 8,
+      "w": 283,
+      "h": 330,
+      "ref": 320,
+      "fps": 12,
+      "speed": 1.65
+    },
+    "sit": {
+      "src": "sit.webp",
+      "v": "3acf52c1",
+      "frames": 3,
+      "cols": 3,
+      "w": 144,
+      "h": 200,
+      "ref": 320
+    },
+    "sleep": {
+      "src": "sleep.webp",
+      "v": "36f59e86",
+      "frames": 2,
+      "cols": 2,
+      "w": 159,
+      "h": 193,
+      "ref": 320,
+      "fps": 1.2
+    },
+    "think": {
+      "src": "think.webp",
+      "v": "b7c144be",
+      "frames": 4,
+      "cols": 4,
+      "w": 109,
+      "h": 321,
+      "ref": 320
+    },
+    "walk": {
+      "src": "walk.webp",
+      "v": "6c499998",
+      "frames": 7,
+      "cols": 7,
+      "w": 180,
+      "h": 326,
+      "ref": 320,
+      "fps": 8,
+      "speed": 0.85
+    },
+    "wave": {
+      "src": "wave.webp",
+      "v": "03f28120",
+      "frames": 6,
+      "cols": 6,
+      "w": 130,
+      "h": 329,
+      "ref": 320
+    }
+  }
+}

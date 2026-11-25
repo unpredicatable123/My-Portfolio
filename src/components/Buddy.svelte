@@ -3,7 +3,9 @@
   import { ScrollTrigger } from '../lib/scroll.js';
   import { media } from '../lib/media.js';
   import { mascot, react, say, hop, PARTICLES, MOOD_LABEL } from '../lib/mascot.svelte.js';
+  import { loadSprite } from '../lib/sprite.js';
   import Character from './Character.svelte';
+  import SpriteRunner from './SpriteRunner.svelte';
 
   let show = $state(false);
   let mini = $state(false);
@@ -11,6 +13,11 @@
   let typing = $state(false);
   let particles = $state([]);
   let pid = 0;
+  // full-body running character, once its sprites exist (npm run sprite); the bust until then
+  let sheet = $state(null);
+  onMount(() => {
+    loadSprite().then((s) => (sheet = s));
+  });
 
   // poke → a different expression + line each time
   const pokes = [
@@ -94,14 +101,11 @@
   });
 </script>
 
-<div
-  class="buddy pointer-events-none fixed bottom-0 right-2 z-[45] transition-transform duration-700 ease-out-expo md:right-6 {show && !mini ? 'translate-y-[10%]' : 'translate-y-[120%]'}"
-  style="width: clamp(88px, min(15vw, 22svh), 230px)"
->
+{#snippet talk(pos)}
   <!-- speech bubble -->
   {#key mascot.sayId}
     {#if typed}
-      <div class="bubble-wrap pointer-events-auto absolute bottom-[80%] right-[58%]" role="status" aria-live="polite">
+      <div class="bubble-wrap pointer-events-auto absolute {pos}" role="status" aria-live="polite">
         <div class="bubble">
           <div class="head">
             <span class="dot"></span>
@@ -124,6 +128,20 @@
       aria-hidden="true">{p.ch}</span
     >
   {/each}
+{/snippet}
+
+{#if sheet}
+  <SpriteRunner {sheet} active={show && !mini} onpoke={poke} onhide={() => (mini = true)}>
+    {#snippet overlay(side)}
+      {@render talk(side === 'left' ? 'bottom-[90%] right-[74%]' : 'right-side bottom-[90%] left-[74%]')}
+    {/snippet}
+  </SpriteRunner>
+{:else}
+<div
+  class="buddy pointer-events-none fixed bottom-0 right-2 z-[45] transition-transform duration-700 ease-out-expo md:right-6 {show && !mini ? 'translate-y-[10%]' : 'translate-y-[120%]'}"
+  style="width: clamp(88px, min(15vw, 22svh), 230px)"
+>
+  {@render talk('bottom-[80%] right-[58%]')}
 
   <button
     onclick={poke}
@@ -144,6 +162,7 @@
     ×
   </button>
 </div>
+{/if}
 
 <!-- minimised: small pill to bring him back -->
 <button
@@ -279,6 +298,22 @@
     height: 6px;
     right: -18px;
     bottom: -16px;
+  }
+  .right-side {
+    transform-origin: 0 100%;
+    animation-name: pop-right;
+  }
+  .right-side .t1 {
+    right: auto;
+    left: -8px;
+  }
+  .right-side .t2 {
+    right: auto;
+    left: -18px;
+  }
+  @keyframes pop-right {
+    from { opacity: 0; transform: translate(-14px, 14px) scale(0.55) rotate(8deg); }
+    to { opacity: 1; transform: none; }
   }
 
   .particle {

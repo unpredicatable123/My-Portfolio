@@ -11,6 +11,9 @@ export const media = {
   photo: '/media/me-3d.webp',
   photoAspect: 1400 / 1288, // width / height of the portrait image (head + full shoulders, cut only at the bottom)
   stylized: null, // optional middle stage between code and `photo`
+  // Full-body character that runs along the bottom of the screen (built with `npm run sprite`).
+  // Until an `idle` action exists, the floating buddy stays the animated bust. null = always the bust.
+  sprite: '/media/sprite/sprite.json',
   // Face rig landmarks for `photo`, in image pixels (image is 1400 × 1288).
   // Used by Character.svelte to animate eyes, blinks, brows and smile with a WebGL warp.
   rig: {

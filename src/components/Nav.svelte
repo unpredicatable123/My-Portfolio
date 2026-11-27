@@ -8,6 +8,7 @@
     { label: 'Work', count: pad(projects.length + moreProjects.length), href: '#work' },
     { label: 'Skills', count: pad(toolkitGroups.length), href: '#skills' },
     { label: 'Journey', count: pad(experience.length + education.length + certifications.length), href: '#journey' },
+    { label: 'Play', href: '#play' },
     { label: 'Contact', href: '#contact' },
   ];
 

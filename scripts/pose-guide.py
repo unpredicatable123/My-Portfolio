@@ -4,7 +4,8 @@ near side, light limbs = far side), 2 rows of 4 on green. Give a guide to the im
 extra reference ("redraw the character in exactly these poses") so every frame gets a different,
 correct leg position. Image models can't invent a cycle on their own.
 
-  python scripts/pose-guide.py      # writes guide-run.png and guide-walk.png in the current folder
+  python scripts/pose-guide.py               # guide-run.png / guide-walk.png, 8 poses (2 rows of 4)
+  python scripts/pose-guide.py --poses 16    # guide-run-16.png / guide-walk-16.png, 21:9, 2 rows of 8
 
 Also prints the travel speed (body heights per second) at which the feet don't slide.
 Needs Pillow (pip install pillow).
@@ -23,12 +24,20 @@ CYCLES = {
 H = 1.0
 L = dict(thigh=.245, shin=.235, torso=.30, uarm=.165, farm=.15, head=.07)
 
+N = 8  # poses per cycle; set by --poses (8 or 16)
+
+def leg_at(leg, f):
+    """(thigh, knee) at pose f of N, interpolated between the 8 keyframes."""
+    pos = f * 8 / N
+    i = int(pos) % 8; j = (i + 1) % 8; u = pos - int(pos)
+    return (leg[i][0] * (1 - u) + leg[j][0] * u, leg[i][1] * (1 - u) + leg[j][1] * u)
+
 def pose(c, f):
     leg = c['leg']
     out = {}
     hip = [0.0, 0.0]
-    for side, off in (('near', 0), ('far', 4)):
-        t, k = leg[(f + off) % 8]
+    for side, off in (('near', 0), ('far', N // 2)):
+        t, k = leg_at(leg, (f + off) % N)
         tr, kr = math.radians(t), math.radians(t - k)
         knee = (hip[0] + L['thigh']*math.sin(tr), hip[1] + L['thigh']*math.cos(tr))
         ank = (knee[0] + L['shin']*math.sin(kr), knee[1] + L['shin']*math.cos(kr))
@@ -54,15 +63,16 @@ def figure(c, f):
     return segs, sh, hip, head, lowest
 
 def draw_sheet(name, c, cols, rows, W=2400, H_=1350):
+    """N poses in `rows` rows of `cols`, read left to right, top row first."""
     im = Image.new('RGB', (W, H_), (0, 255, 0))
     d = ImageDraw.Draw(im)
     cw, ch = W/cols, H_/rows
     S = ch*0.62  # body height in px
-    for f in range(8):
+    for f in range(N):
         cx = (f % cols + .5)*cw - S*0.03
         gy = (f//cols + 1)*ch - ch*0.1
         segs, sh, hip, head, lowest = figure(c, f)
-        lift = c['air'].get(f, 0)
+        lift = c['air'].get(f * 8 // N, 0) if (f * 8) % N == 0 else 0
         oy = gy - (lowest + .03)*S - lift*S  # ankle a bit above ground for the shoe
         P = lambda q: (cx + q[0]*S, oy + q[1]*S)
         def limb(pts, col, w):
@@ -82,11 +92,16 @@ def draw_sheet(name, c, cols, rows, W=2400, H_=1350):
         limb(segs['near_arm'], NEAR, .055)
     im.save(name)
 
+import sys
+if '--poses' in sys.argv: N = int(sys.argv[sys.argv.index('--poses') + 1])
 info = {}
 for name, c in CYCLES.items():
-    draw_sheet(f'guide-{name}.png', c, 4, 2)
+    fps = c['fps'] * N // 8  # same cadence, more drawings
+    if N == 8: draw_sheet(f'guide-{name}.png', c, 4, 2)
+    else: draw_sheet(f'guide-{name}-{N}.png', c, N // 2, 2, W=3136, H_=1344)  # 21:9, 2 rows
     # speed: during stance the planted near foot slides back relative to the hip;
-    # body speed = that distance / stance time (contact frame 0 -> push-off frame 3)
-    f0 = pose(c, 0)['near_leg'][2][0]; f3 = pose(c, 3)['near_leg'][2][0]
-    info[name] = dict(speed_body_heights_per_s=round((f0 - f3) / (3 / c['fps']), 2), fps=c['fps'])
+    # body speed = that distance / stance time (contact pose -> push-off, 3/8 of a cycle)
+    k = 3 * N // 8
+    f0 = pose(c, 0)['near_leg'][2][0]; f3 = pose(c, k)['near_leg'][2][0]
+    info[name] = dict(speed_body_heights_per_s=round((f0 - f3) / (k / fps), 2), fps=fps)
 print(json.dumps(info))

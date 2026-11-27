@@ -1,5 +1,14 @@
 {
   "actions": {
+    "bug": {
+      "src": "bug.webp",
+      "v": "bf1c2ce6",
+      "frames": 4,
+      "cols": 4,
+      "w": 537,
+      "h": 323,
+      "ref": 320
+    },
     "code": {
       "src": "code.webp",
       "v": "490f56b1",
@@ -39,13 +48,13 @@
     },
     "run": {
       "src": "run.webp",
-      "v": "9f7763ba",
-      "frames": 8,
-      "cols": 8,
-      "w": 283,
-      "h": 330,
+      "v": "d04e32de",
+      "frames": 15,
+      "cols": 15,
+      "w": 232,
+      "h": 331,
       "ref": 320,
-      "fps": 12,
+      "fps": 24,
       "speed": 1.65
     },
     "sit": {
@@ -78,13 +87,13 @@
     },
     "walk": {
       "src": "walk.webp",
-      "v": "6c499998",
-      "frames": 7,
-      "cols": 7,
-      "w": 180,
-      "h": 326,
+      "v": "b41919e1",
+      "frames": 16,
+      "cols": 16,
+      "w": 172,
+      "h": 324,
       "ref": 320,
-      "fps": 8,
+      "fps": 18,
       "speed": 0.85
     },
     "wave": {

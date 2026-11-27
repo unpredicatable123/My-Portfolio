@@ -3,9 +3,8 @@
   import { ScrollTrigger } from '../lib/scroll.js';
   import { media } from '../lib/media.js';
   import { mascot, react, say, hop, PARTICLES, MOOD_LABEL } from '../lib/mascot.svelte.js';
-  import { loadSprite } from '../lib/sprite.js';
+  import { app } from '../lib/state.svelte.js';
   import Character from './Character.svelte';
-  import SpriteRunner from './SpriteRunner.svelte';
 
   let show = $state(false);
   let mini = $state(false);
@@ -13,11 +12,6 @@
   let typing = $state(false);
   let particles = $state([]);
   let pid = 0;
-  // full-body running character, once its sprites exist (npm run sprite); the bust until then
-  let sheet = $state(null);
-  onMount(() => {
-    loadSprite().then((s) => (sheet = s));
-  });
 
   // poke → a different expression + line each time
   const pokes = [
@@ -130,15 +124,8 @@
   {/each}
 {/snippet}
 
-{#if sheet}
-  <SpriteRunner {sheet} active={show && !mini} onpoke={poke} onhide={() => (mini = true)}>
-    {#snippet overlay(side)}
-      {@render talk(side === 'left' ? 'bottom-[90%] right-[74%]' : 'right-side bottom-[90%] left-[74%]')}
-    {/snippet}
-  </SpriteRunner>
-{:else}
 <div
-  class="buddy pointer-events-none fixed bottom-0 right-2 z-[45] transition-transform duration-700 ease-out-expo md:right-6 {show && !mini ? 'translate-y-[10%]' : 'translate-y-[120%]'}"
+  class="buddy pointer-events-none fixed bottom-0 right-2 z-[45] transition-transform duration-700 ease-out-expo md:right-6 {show && !mini && !app.playing ? 'translate-y-[10%]' : 'translate-y-[120%]'}"
   style="width: clamp(88px, min(15vw, 22svh), 230px)"
 >
   {@render talk('bottom-[80%] right-[58%]')}
@@ -162,7 +149,6 @@
     ×
   </button>
 </div>
-{/if}
 
 <!-- minimised: small pill to bring him back -->
 <button

@@ -12,6 +12,7 @@
   import Journey from './components/Journey.svelte';
   import Hackathons from './components/Hackathons.svelte';
   import Contact from './components/Contact.svelte';
+  import Play from './components/Play.svelte';
   import Buddy from './components/Buddy.svelte';
   import { startMascot } from './lib/mascotDirector.js';
 
@@ -50,5 +51,6 @@
   <Projects />
   <Journey />
   <Hackathons />
+  <Play />
   <Contact />
 </main>

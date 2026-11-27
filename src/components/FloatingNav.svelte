@@ -10,6 +10,7 @@
     { id: 'skills', label: 'Skills' },
     { id: 'journey', label: 'Journey' },
     { id: 'hackathons', label: 'Hackathons' },
+    { id: 'play', label: 'Play' },
     { id: 'contact', label: 'Contact' },
   ];
 

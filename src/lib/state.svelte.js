@@ -1,1 +1,1 @@
-export const app = $state({ loaded: false });
+export const app = $state({ loaded: false, playing: false });

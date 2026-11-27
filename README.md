@@ -24,7 +24,8 @@ Deploy: push to GitHub and import the repo in Vercel (framework preset: Vite, bu
 | 3 | **Selected Work** | Horizontal pinned scroll (desktop) through 6 featured GitHub projects (Hexoria, Golu, OVERRIDE, VAZHI, AI Scam Detection, Android Malware), each with its own theme and a live screenshot or animated UI mock, then a "More work" hover list (SymphoCare and this portfolio). Edit them in `src/lib/data.js` (`projects`, `moreProjects`); screenshots live in `public/media/projects/`. |
 | 4 | **Journey** | Timeline line draws itself; tilt/glare certification cards. |
 | 5 | **Hackathons** | Sticky stacking SIH cards. |
-| 6 | **Contact** | Star-warp scene, copy-email, live IST clock. |
+| 6 | **Play** (`Play.svelte`) | *Deploy Run*, a side-scrolling platformer starring you (see below). |
+| 7 | **Contact** | Star-warp scene, copy-email, live IST clock. |
 
 ## The animated character
 
@@ -38,44 +39,51 @@ Reactions are wired in `src/lib/mascotDirector.js`: hover links (smile / grin / 
 click him (hop + fun fact), copy the email (grin). Moods and their values live in
 `src/lib/mascot.svelte.js`. If you replace the portrait image, update the `rig` landmarks.
 
-## The running character (full-body sprite)
+## Deploy Run (the Play section)
 
-Once sprites exist, the floating buddy becomes a full-body, head-to-toe version of you that lives on
-the bottom edge of the screen. He wanders, walks, runs, jumps and emotes. Scroll fast and he dashes
-in the scroll direction. Poke him and he jumps. Section lines make him stop, turn to you and wave
-while the speech bubble (which follows him) is up. Go idle and he falls asleep. Until an `idle`
-sprite exists the site keeps the animated bust, so nothing breaks halfway through.
+An original side-scrolling platformer starring the full-body version of you. One level in three
+chapters (Campus → Hackathon → Internship) ending at the Deploy gate: collect your skills as keys,
+bump **commit blocks** from below to unlock project cards (with Live / Code links), stomp bugs, jump
+"404" gaps and "merge conflict" spikes. Checkpoints save at each chapter; the win screen leads to
+Contact. Keyboard (← → / A D, Space / ↑, Esc), on-screen buttons on touch devices, fullscreen.
 
-- `src/lib/spriteBrain.js`: behaviour (wander, react to pokes, moods, speech and scroll)
-- `src/components/SpriteRunner.svelte`: draws him and runs the loop
-- `src/lib/sprite.js`: loads the strips and sets per-action defaults (fps, loop, speed)
-- `scripts/sprite.mjs`: turns Higgsfield images into strips
+- `src/lib/game/level.js`: the level, built from helper calls (`ground`, `blocks`, `commit`, `key`,
+  `bug`, `spikes`, `sign`, `checkpoint`). Skill labels come from `toolkit`, commit blocks hand out
+  `projects` in order (both in `src/lib/data.js`).
+- `src/lib/game/engine.js`: physics (coyote time, jump buffer, variable jump height), collisions,
+  enemies, camera, and all the drawing. Tune feel with the constants at the top.
+- `src/components/Play.svelte`: the section, HUD, project cards, start/pause/win screens, touch pad.
+  The engine is only downloaded when the section scrolls near. In dev, `window.__game` exposes it.
+
+The hero uses the sprite strips below: `idle`, `walk`, `run`, `jump` and `dance` (win). Enemies use
+the `bug` strip (a 3D beetle, 4 walking frames). The floating companion in the corner stays the
+animated bust and hides while the game is being played.
+
+**Art.** Each chapter has a painted backdrop in `public/media/game/` (`bg-campus`, `bg-hackathon`,
+`bg-office`, Seedream 5.0 lite, 21:9, no references) that scrolls slowly and crossfades at chapter
+borders; its bottom quarter sits behind the ground. Ground, platforms and spikes are drawn in code per
+chapter (grass and crates, a lit stage and flight cases, polished concrete and steel crates) and
+pre-rendered once. Without the backdrop images the game falls back to a drawn skyline.
+
+## The character sprites
 
 ### Actions
 
-Only `idle` is required; each action you add makes him livelier. A missing one borrows the closest
-match (no walk → he runs, no sleep → he sits, and so on). With neither `walk` nor `run` he gets around
-by hopping: a chain of `jump`s that only travel while he's in the air.
-
 > **Walk and run need a pose guide.** Asked for a "walk cycle", image models draw the same stride
-> in every pose, so he glides frozen mid-step. `python scripts/pose-guide.py` draws gray stick
-> mannequins in a correct 8-pose cycle; add that image as a third reference and ask the model to
+> in every pose, so he glides frozen mid-step. `python scripts/pose-guide.py --poses 16` draws gray
+> stick mannequins in a correct cycle; add that image as a third reference and ask the model to
 > redraw the character in exactly those poses ("copy the pose guide exactly; dark limbs are his
-> near arm and leg, light limbs his far ones"). It also prints the matching `--speed`. A short
-> image-to-video clip converted with `npm run sprite -- run.mp4 run` works too, but costs credits.
+> near arm and leg, light limbs his far ones"). A short image-to-video clip converted with
+> `npm run sprite -- run.mp4 run` works too, but costs credits.
 
 | Action | Frames | Used for |
 |--------|--------|----------|
-| `idle` ⭐ | 4 | standing, breathing (required) |
-| `run` | 8 | dashes across the screen, fast scrolling |
-| `walk` | 7 | strolling around |
-| `jump` | 6 | pokes, surprise, end of a run (the jump arc is added in code; frames only need the body pose) |
-| `wave` | 6 | greeting when a section line appears |
-| `think` | 4 | "thinking" mood |
-| `dance` | 6–8 | love / cool moods, random fun |
-| `code` | 4 | sits typing on a laptop (random emote) |
-| `sit` | 4 | sits and rests |
-| `sleep` | 4 | dozes off after 16s idle |
+| `idle` ⭐ | 4 | standing still (required) |
+| `walk` | 16 | moving slowly |
+| `run` | 15 | moving at full speed |
+| `jump` | 6 | in the air: take-off, rise, peak, fall, landing |
+| `dance` | 6 | celebrating at the Deploy gate |
+| `wave`, `think`, `code`, `sit`, `sleep` | 2–6 | generated, not used by the game yet |
 
 ### 1. Make a full-body "master" image (once)
 
@@ -176,7 +184,7 @@ so the site always works.
 | `malware` | ✅ 29 frames | Seedance 2.0 Fast, trimmed to 0–1.2s (a longer clean clip would scrub smoother) |
 | `journey` | ⏳ procedural fallback | not generated yet |
 | `contact` | ⏳ procedural star-warp | not generated yet |
-| `sprite` | ✅ idle 4 · walk 7 · run 8 · jump 6 · wave 6 · think 4 · dance 6 · code 3 · sit 3 · sleep 2 frames. Walk/run redrawn from `scripts/pose-guide.py` mannequins as a third reference; converted with `--fps 12 --speed 1.65` (run) and `--frames 1-3+5-8 --fps 8 --speed 0.85` (walk) | Seedream 5.0 lite (Unlimited), `me-3d.webp` + full-body master as references, green screen; raw sheets in `sprites-src/` (git-ignored) |
+| `sprite` | ✅ idle 4 · walk 16 · run 15 · jump 6 · wave 6 · think 4 · dance 6 · code 3 · sit 3 · sleep 2 frames. Walk/run redrawn from `scripts/pose-guide.py` mannequins as a third reference; 16-pose guides (`pose-guide.py --poses 16`, 21:9, 2 rows of 8); converted with `--frames 1-15 --fps 24 --speed 1.65` (run) and `--fps 18 --speed 0.85` (walk) | Seedream 5.0 lite (Unlimited), `me-3d.webp` + full-body master as references, green screen; raw sheets in `sprites-src/` (git-ignored) |
 
 When generating, make sure the prompt box is **completely empty** first (Ctrl+A, Delete); Higgsfield keeps
 the previous prompt and the old text can leak into the clip.

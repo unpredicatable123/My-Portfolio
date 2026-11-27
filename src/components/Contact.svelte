@@ -55,7 +55,7 @@
 
   <div class="relative z-10 flex flex-1 flex-col justify-center px-5 pt-28 md:px-10">
     <div class="mono mb-6 flex items-center gap-3 text-[11px] uppercase tracking-[0.25em] text-mist/70">
-      <span class="h-px w-10 bg-lime"></span> (06) Contact
+      <span class="h-px w-10 bg-lime"></span> (07) Contact
     </div>
 
     <a

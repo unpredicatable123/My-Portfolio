@@ -12,6 +12,7 @@ const SECTION_LINES = {
   work: [`${projects.length + moreProjects.length} projects ahead, scroll to slide through them →`, 'curious'],
   journey: ['Full-stack intern at SymphoZen Labs, and MCA at Sona 🎓', 'excited'],
   hackathons: ['Smart India Hackathon, three times! 🏆', 'excited'],
+  play: ["I'm the hero in this one. Press Start! 🎮", 'excited'],
   contact: ["Let's build something together ✨", 'love'],
 };
 
